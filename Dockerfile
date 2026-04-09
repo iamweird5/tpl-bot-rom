@@ -1,4 +1,4 @@
-# Use Python slim image
+# Python slim image
 FROM python:3.14-slim
 
 # Install dependencies for headless Chrome
@@ -20,16 +20,18 @@ RUN CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
     && unzip /tmp/chromedriver.zip -d /usr/local/bin/ \
     && rm /tmp/chromedriver.zip
 
-# Set environment variables
-ENV PORT=10000
-
-# Copy app files
+# Set working directory
 WORKDIR /app
+
+# Copy files
 COPY requirements.txt .
 COPY app.py .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Run app
-CMD ["python", "app.py"]
+# Expose port
+ENV PORT=10000
+
+# Start Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app", "--workers", "1"]

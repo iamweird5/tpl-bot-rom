@@ -50,16 +50,14 @@ def get_epass_cookie():
         driver.get(EPASS_LOGIN_URL)
         time.sleep(2)
 
-        # Enter library card number
+        # Detect login fields dynamically
         card_input = driver.find_element(By.ID, "PatronNumber")
-        card_input.send_keys(LIBRARY_CARD)
-
-        # Enter PIN
         pin_input = driver.find_element(By.ID, "PIN")
-        pin_input.send_keys(PIN)
-
-        # Submit login
         login_button = driver.find_element(By.ID, "LoginButton")
+
+        # Enter credentials
+        card_input.send_keys(LIBRARY_CARD)
+        pin_input.send_keys(PIN)
         login_button.click()
         time.sleep(3)
 
@@ -74,9 +72,9 @@ def get_epass_cookie():
                 remember = c["value"]
 
         if not epass or not remember:
-            raise Exception("Failed to get cookies from login")
+            raise Exception("❌ Failed to get cookies from login")
 
-        print("✅ Login success, cookies obtained")
+        print("✅ Login success")
         return epass, remember
 
     finally:
