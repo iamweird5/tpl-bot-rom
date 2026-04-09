@@ -11,7 +11,7 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 
 EPASS = os.environ.get("EPASS")
-REMEMBER = os.environ.get("REMEMBER")  # MUST BE URL-ENCODED
+REMEMBER = os.environ.get("REMEMBER")  # URL-ENCODED
 
 BASE_URL = "https://epass-ca.quipugroup.net/epass_server.php"
 
@@ -52,29 +52,20 @@ def check_attraction(name, attraction_id):
         r = requests.get(BASE_URL, headers=HEADERS, params=params, timeout=15)
 
         print(f"\n🔍 {name} STATUS CODE:", r.status_code)
-        print(f"🔍 RAW RESPONSE:\n{r.text[:500]}")
+        print(f"🔍 RAW RESPONSE:\n{r.text[:300]}")
 
         if r.status_code != 200:
             return "ERROR"
 
         data = r.json()
 
-        # Combine all possible fields
-        text = (
-            (data.get("offerDescription") or "") +
-            (data.get("attractionInfoDescription") or "")
-        ).lower()
+        offer_id = data.get("offerID")
+        print(f"🎯 {name} OFFER ID:", offer_id)
 
-        print(f"🧠 PARSED TEXT SAMPLE:\n{text[:300]}")
-
-        if "show first available offer" in text:
+        if offer_id:
             return "AVAILABLE"
-
-        if "no passes available" in text or \
-           "all passes for this attraction have been reserved" in text:
+        else:
             return "NOT AVAILABLE"
-
-        return "UNKNOWN"
 
     except Exception:
         print(f"❌ ERROR checking {name}:")
@@ -96,7 +87,7 @@ def run_check():
         status = check_attraction(name, aid)
         results[name] = status
 
-        # Send alert only when becomes AVAILABLE
+        # Send Telegram alert only when it becomes AVAILABLE
         if status == "AVAILABLE" and last_status[name] != "AVAILABLE":
             send_telegram(f"🚨 {name} PASS AVAILABLE!")
 
